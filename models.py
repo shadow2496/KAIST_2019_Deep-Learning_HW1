@@ -35,11 +35,16 @@ class FCN(nn.Module):
     def __init__(self, config):
         super(FCN, self).__init__()
 
-        self.is_train = config.is_train
-        vgg16 = torchvision.models.vgg16(pretrained=self.is_train)
-        self.network = FCN32s(vgg16.features)
+        if config.network == 'fcn32s':
+            vgg16 = torchvision.models.vgg16(pretrained=config.is_train)
+            self.network = FCN32s(vgg16.features)
+        elif config.network == 'fcn16s':
+            vgg16 = torchvision.models.vgg16(pretrained=False)
+            fcn32s = FCN32s(vgg16.features)
+            self.network = None  #?
 
-        if self.is_train:
+        if config.is_train:
+            self.criterion = nn.CrossEntropyLoss(ignore_index=255)
             self.optimizer = optim.SGD(self.network.parameters(), lr=config.lr,
                                        momentum=config.momentum, weight_decay=config.weight_decay)
 
