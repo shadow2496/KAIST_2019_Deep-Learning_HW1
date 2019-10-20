@@ -21,6 +21,16 @@ def get_upsampling_weight(in_channels, out_channels, kernel_size):
     return torch.from_numpy(weight).float()
 
 
+def initialize_weights(m):
+    if isinstance(m, nn.Conv2d):
+        nn.init.zeros_(m.weight)
+        if m.bias is not None:
+            nn.init.zeros_(m.bias)
+    elif isinstance(m, nn.ConvTranspose2d):
+        initial_weight = get_upsampling_weight(m.in_channels, m.out_channels, m.kernel_size[0])
+        m.weight.data.copy_(initial_weight)
+
+
 class FCN32s(nn.Module):
     def __init__(self, features):
         super(FCN32s, self).__init__()
@@ -39,6 +49,8 @@ class FCN32s(nn.Module):
             nn.Conv2d(4096, 21, kernel_size=1, bias=True),
             nn.ConvTranspose2d(21, 21, kernel_size=64, stride=32, bias=False)
         )
+
+        self.conv_layers.apply(initialize_weights)
 
     def forward(self, x):
         h = self.features(x)
