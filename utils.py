@@ -1,6 +1,15 @@
+import os
+
 import numpy as np
 import torch
 from torch import nn
+
+
+def load_checkpoints(network, name, checkpoint_dir, load_iter):
+    filename = '{:06d}-{}.ckpt'.format(load_iter, name)
+    print('Loading {}...'.format(filename))
+    network_path = os.path.join(checkpoint_dir, filename)
+    network.load_state_dict(torch.load(network_path, map_location=lambda storage, loc: storage))
 
 
 # https://github.com/shelhamer/fcn.berkeleyvision.org/blob/master/surgery.py

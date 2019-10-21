@@ -8,6 +8,7 @@ from torchvision import transforms
 from config import config
 from datasets import VOCDataset
 from models import FCN
+from utils import load_checkpoints
 
 
 def train(models, writer, device):
@@ -53,7 +54,7 @@ def train(models, writer, device):
                 writer.add_scalar('Loss/val', loss.item(), idx + 1)
 
         if (idx + 1) % config.checkpoint_step == 0:
-            checkpoint_path = os.path.join(config.checkpoint_dir, '{:05d}-{}.ckpt'.format(idx + 1, config.network))
+            checkpoint_path = os.path.join(config.checkpoint_dir, '{:06d}-{}.ckpt'.format(idx + 1, config.network))
             torch.save(models.network.state_dict(), checkpoint_path)
 
 
@@ -62,19 +63,19 @@ def test(models, device):
 
 
 def main():
-    if not os.path.exists(config.tensorboard_dir):
-        os.makedirs(config.tensorboard_dir)
+    if not os.path.exists(os.path.join(config.tensorboard_dir, config.network)):
+        os.makedirs(os.path.join(config.tensorboard_dir, config.network))
     if not os.path.exists(config.checkpoint_dir):
         os.makedirs(config.checkpoint_dir)
 
     device = torch.device('cuda:0' if config.use_cuda else 'cpu')
     models = FCN(config).to(device)
     if config.load_iter != 0:
-        pass
+        load_checkpoints(models.network, config.network, config.checkpoint_dir, config.load_iter)
 
     if config.is_train:
         models.train()
-        writer = SummaryWriter(log_dir=config.tensorboard_dir)
+        writer = SummaryWriter(log_dir=os.path.join(config.tensorboard_dir, config.network))
         train(models, writer, device)
     else:
         models.eval()

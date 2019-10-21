@@ -1,7 +1,7 @@
 from torch import nn, optim
 import torchvision.models
 
-from utils import initialize_weights
+from utils import load_checkpoints, initialize_weights
 
 
 class FCN32s(nn.Module):
@@ -47,6 +47,7 @@ class FCN(nn.Module):
         elif config.network == 'fcn16s':
             vgg16 = torchvision.models.vgg16(pretrained=False)
             fcn32s = FCN32s(vgg16.features)
+            load_checkpoints(fcn32s, 'fcn32s', config.checkpoint_dir, 100000)
             self.network = None  #?
 
         if config.is_train:
