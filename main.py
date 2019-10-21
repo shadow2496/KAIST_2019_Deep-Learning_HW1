@@ -80,7 +80,7 @@ def test(models, device):
     ])
 
     test_dataset = VOCDataset(config.dataset_dir, year='2011', image_set='val', download=True, transform=transform)
-    test_loader = DataLoader(test_dataset, batch_size=config.batch_size, shuffle=True, num_workers=config.num_workers)
+    test_loader = DataLoader(test_dataset, batch_size=config.batch_size, num_workers=config.num_workers)
 
     sum_iu = 0
     with torch.no_grad():
