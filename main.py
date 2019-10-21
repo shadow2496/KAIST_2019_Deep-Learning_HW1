@@ -8,7 +8,7 @@ from torchvision import transforms
 from config import config
 from datasets import VOCDataset
 from models import FCN
-from utils import load_checkpoints
+from utils import load_checkpoints, get_colormap
 
 
 def train(models, writer, device):
@@ -52,6 +52,21 @@ def train(models, writer, device):
                 logits = models(images)
                 loss = models.criterion(logits, labels)
                 writer.add_scalar('Loss/val', loss.item(), idx + 1)
+
+                writer.add_scalar('Weight/conv0/max', models.network.conv_layers[0].weight.max(), idx + 1)
+                writer.add_scalar('Weight/conv0/mean', models.network.conv_layers[0].weight.mean(), idx + 1)
+                writer.add_scalar('Weight/conv0/min', models.network.conv_layers[0].weight.min(), idx + 1)
+                writer.add_scalar('Weight/conv1/max', models.network.conv_layers[3].weight.max(), idx + 1)
+                writer.add_scalar('Weight/conv1/mean', models.network.conv_layers[3].weight.mean(), idx + 1)
+                writer.add_scalar('Weight/conv1/min', models.network.conv_layers[3].weight.min(), idx + 1)
+                writer.add_scalar('Weight/conv2/max', models.network.conv_layers[6].weight.max(), idx + 1)
+                writer.add_scalar('Weight/conv2/mean', models.network.conv_layers[6].weight.mean(), idx + 1)
+                writer.add_scalar('Weight/conv2/min', models.network.conv_layers[6].weight.min(), idx + 1)
+
+                cmap = get_colormap()
+                preds = logits.argmax(dim=1)
+                writer.add_image('Segmentation/prediction', cmap[preds[0]], idx + 1, dataformats='HWC')
+                writer.add_image('Segmentation/label', cmap[labels[0]], idx + 1, dataformats='HWC')
 
         if (idx + 1) % config.checkpoint_step == 0:
             checkpoint_path = os.path.join(config.checkpoint_dir, '{:06d}-{}.ckpt'.format(idx + 1, config.network))

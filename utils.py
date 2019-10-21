@@ -37,3 +37,23 @@ def initialize_weights(m):
     elif isinstance(m, nn.ConvTranspose2d):
         initial_weight = get_upsampling_weight(m.in_channels, m.out_channels, m.kernel_size[0])
         m.weight.data.copy_(initial_weight)
+
+
+def bitget(byteval, idx):
+    return (byteval & (1 << idx)) != 0
+
+
+def get_colormap(n=256):
+    cmap = torch.zeros((n, 3))
+    for i in range(n):
+        num = i
+        r, g, b = 0, 0, 0
+        for j in range(8):
+            r = np.bitwise_or(r, (bitget(num, 0) << 7 - j))
+            g = np.bitwise_or(g, (bitget(num, 1) << 7 - j))
+            b = np.bitwise_or(b, (bitget(num, 2) << 7 - j))
+            num = (num >> 3)
+        cmap[i, 0] = r / 255
+        cmap[i, 1] = g / 255
+        cmap[i, 2] = b / 255
+    return cmap
