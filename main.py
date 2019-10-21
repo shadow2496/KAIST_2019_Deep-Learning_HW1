@@ -89,7 +89,8 @@ def test(models, device):
             labels = labels.to(device)
 
             logits = models(images)
-            _, _, mean_iu, _ = label_accuracy_score(labels, logits, 21)
+            preds = logits.argmax(dim=1)
+            _, _, mean_iu, _ = label_accuracy_score(labels.cpu().numpy(), preds.cpu().numpy(), 21)
             sum_iu += mean_iu * images.size(0)
 
     print("Mean IU: {}".format(sum_iu / len(test_dataset)))
