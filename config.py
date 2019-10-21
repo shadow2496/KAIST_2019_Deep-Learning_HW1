@@ -13,7 +13,7 @@ config.num_workers = 2
 
 config.lr = 1e-4
 config.momentum = 0.9
-config.weight_decay = 1.6e-3
+config.weight_decay = 5e-4
 
 config.print_step = 10
 config.tensorboard_step = 50
