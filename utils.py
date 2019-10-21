@@ -26,6 +26,7 @@ def get_upsampling_weight(in_channels, out_channels, kernel_size):
     weight = np.zeros((in_channels, out_channels, kernel_size, kernel_size),
                       dtype=np.float64)
     weight[range(in_channels), range(out_channels), :, :] = filt
+
     return torch.from_numpy(weight).float()
 
 
@@ -56,6 +57,7 @@ def get_colormap(n=256):
         cmap[i, 0] = r / 255
         cmap[i, 1] = g / 255
         cmap[i, 2] = b / 255
+
     return cmap
 
 
@@ -65,6 +67,7 @@ def _fast_hist(label_true, label_pred, n_class):
     hist = np.bincount(
         n_class * label_true[mask].astype(int) +
         label_pred[mask], minlength=n_class ** 2).reshape(n_class, n_class)
+
     return hist
 
 
@@ -90,4 +93,5 @@ def label_accuracy_score(label_trues, label_preds, n_class):
     mean_iu = np.nanmean(iu)
     freq = hist.sum(axis=1) / hist.sum()
     fwavacc = (freq[freq > 0] * iu[freq > 0]).sum()
+
     return acc, acc_cls, mean_iu, fwavacc
