@@ -8,6 +8,12 @@ class FCN32s(nn.Module):
     def __init__(self, features):
         super(FCN32s, self).__init__()
 
+        features[0].padding = (100, 100)
+        features[4].ceil_mode = True
+        features[9].ceil_mode = True
+        features[16].ceil_mode = True
+        features[23].ceil_mode = True
+        features[30].ceil_mode = True
         self.features = features
 
         self.conv_layers = nn.Sequential(
