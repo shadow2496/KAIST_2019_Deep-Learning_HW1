@@ -8,7 +8,7 @@ from torchvision import transforms
 from config import config
 from datasets import VOCDataset
 from models import FCN
-from utils import load_checkpoints, get_colormap
+from utils import load_checkpoints, get_colormap, label_accuracy_score
 
 
 def train(models, writer, device):
@@ -74,7 +74,25 @@ def train(models, writer, device):
 
 
 def test(models, device):
-    pass
+    transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
+
+    test_dataset = VOCDataset(config.dataset_dir, year='2011', image_set='val', download=True, transform=transform)
+    test_loader = DataLoader(test_dataset, batch_size=config.batch_size, shuffle=True, num_workers=config.num_workers)
+
+    sum_iu = 0
+    with torch.no_grad():
+        for images, labels in test_loader:
+            images = images.to(device)
+            labels = labels.to(device)
+
+            logits = models(images)
+            _, _, mean_iu, _ = label_accuracy_score(labels, logits, 21)
+            sum_iu += mean_iu * images.size(0)
+
+    print("Mean IU: {}".format(sum_iu / len(test_dataset)))
 
 
 def main():
