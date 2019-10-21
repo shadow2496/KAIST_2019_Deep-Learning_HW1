@@ -86,12 +86,12 @@ class FCN(nn.Module):
         super(FCN, self).__init__()
 
         if config.network == 'fcn32s':
-            vgg16 = torchvision.models.vgg16(pretrained=config.is_train)
+            vgg16 = torchvision.models.vgg16(pretrained=(config.load_iter == 0))
             self.network = FCN32s(vgg16)
         elif config.network == 'fcn16s':
             vgg16 = torchvision.models.vgg16(pretrained=False)
             fcn32s = FCN32s(vgg16)
-            if config.is_train:
+            if config.load_iter == 0:
                 load_checkpoints(fcn32s, 'fcn32s', config.checkpoint_dir, 100000)
             self.network = FCN16s(fcn32s)
 
