@@ -5,16 +5,13 @@ from utils import load_checkpoints, initialize_weights
 
 
 class FCN32s(nn.Module):
-    def __init__(self, features):
+    def __init__(self, vgg16):
         super(FCN32s, self).__init__()
 
-        features[0].padding = (100, 100)
-        features[4].ceil_mode = True
-        features[9].ceil_mode = True
-        features[16].ceil_mode = True
-        features[23].ceil_mode = True
-        features[30].ceil_mode = True
-        self.features = features
+        vgg16.features[0].padding = (100, 100)
+        for i in [4, 9, 16, 23, 30]:
+            vgg16.features[i].ceil_mode = True
+        self.features = vgg16.features
 
         self.conv_layers = nn.Sequential(
             nn.Conv2d(512, 4096, kernel_size=7, bias=True),
@@ -30,6 +27,11 @@ class FCN32s(nn.Module):
         )
 
         self.conv_layers.apply(initialize_weights)
+        for i in [0, 3]:
+            l1 = vgg16.classifier[i]
+            l2 = self.conv_layers[i]
+            l2.weight.data = l1.weight.data.view(l2.weight.size())
+            l2.bias.data = l1.bias.data
 
     def forward(self, x):
         h = self.features(x)
@@ -43,10 +45,10 @@ class FCN(nn.Module):
 
         if config.network == 'fcn32s':
             vgg16 = torchvision.models.vgg16(pretrained=config.is_train)
-            self.network = FCN32s(vgg16.features)
+            self.network = FCN32s(vgg16)
         elif config.network == 'fcn16s':
             vgg16 = torchvision.models.vgg16(pretrained=False)
-            fcn32s = FCN32s(vgg16.features)
+            fcn32s = FCN32s(vgg16)
             load_checkpoints(fcn32s, 'fcn32s', config.checkpoint_dir, 100000)
             self.network = None  #?
 
